@@ -1,0 +1,340 @@
+---
+title: "630 Final Project"
+author: "Nicholas Fisher, Christopher Nguyen, Myungje Kim"
+format: pdf
+editor: visual
+execute:
+  message: false
+  warning: false
+---
+
+# 1. Setup
+
+### Load packages
+
+```{r}
+library(tidyverse)
+library(ggplot2)
+library(dplyr)
+library(pacman)
+```
+
+<br><br>
+
+# 2. Data Import & Cleaning
+
+### Import data
+
+```{r}
+table_eggs_data <- read_csv("egg_data.csv")
+table_egg <- table_eggs_data
+```
+
+### Remove columns we are not using
+
+```{r}
+table_egg$Ag.District <- NULL
+table_egg$Ag.District.Code <- NULL
+table_egg$County <- NULL
+table_egg$County.ANSI <- NULL
+table_egg$Region <- NULL
+table_egg$watershed_code <- NULL
+table_egg$Watershed <- NULL
+table_egg$CV.... <- NULL
+table_egg$Week.Ending <- NULL
+table_egg$Zip.Code <- NULL
+```
+
+### Keep only year 2023
+
+```{r}
+table_egg_2023 <- table_egg |>
+filter(Year == 2023)
+```
+
+### Remove rows where Value is recorded as (D)
+
+```{r}
+table_2023 <- table_egg_2023 |>
+filter(Value != "(D)")
+```
+
+### Remove commas in Value and convert to numeric
+
+```{r}
+table_2023$Value <- as.character(table_2023$Value)
+no_commas <- gsub(",", "", table_2023$Value)
+table_2023$Value <- as.numeric(no_commas)
+```
+
+### Keep only variables needed for our analysis
+
+```{r}
+table_2023$Commodity <- NULL
+table_2023$Geo.Level <- NULL
+table_2023$Data.Item <- NULL
+table_2023$Domain <- NULL
+table_2023$Domain.Category <- NULL
+table_2023$State.ANSI <- NULL
+table_2023$Program <- NULL
+```
+
+### Create month number and season
+
+```{r}
+table_2023 <- table_2023 |>
+mutate(
+month_num = match(tolower(Period), tolower(month.abb)),
+season = case_when(
+month_num %in% c(12, 1, 2) ~ "Winter",
+month_num %in% c(3, 4, 5) ~ "Spring",
+month_num %in% c(6, 7, 8) ~ "Summer",
+month_num %in% c(9, 10, 11) ~ "Fall"
+)
+)
+```
+
+### Set season as a factor
+
+```{r}
+table_2023$season <- factor(table_2023$season)
+```
+
+We restricted the data to 2023, removed entries with missing egg production values (D), cleaned the Value variable into numeric form, and created a new categorical variable for season based on the month.
+
+<br><br>
+
+# 3. Exploratory Data Analysis
+
+<br>
+
+## 3.1 Seasonal averages for 16 states (histograms)
+
+<br>
+
+#### Cleaning data to create histograms for states with 12 months of data
+
+```{r}
+new_egg <- table_eggs_data |>
+dplyr::select(Year, State, Period, Value)
+
+new_egg <- new_egg |>
+filter(Year == 2023) |>
+filter(State %in% c(
+"ALABAMA", "GEORGIA", "MARYLAND", "NEBRASKA", "OREGON",
+"ILLINOIS", "UTAH", "MINNESOTA", "INDIANA", "NORTH CAROLINA",
+"PENNSYLVANIA", "VIRGINIA", "IOWA", "SOUTH CAROLINA",
+"SOUTH DAKOTA", "WISCONSIN"
+))
+```
+
+#### Remove commas and convert to integer
+
+```{r}
+new_egg$Value <- gsub(",", "", new_egg$Value)
+new_egg$Value <- as.integer(new_egg$Value)
+```
+
+#### Group months into seasonal groups
+
+```{r}
+winter_egg <- new_egg |>
+filter(Period == "DEC" | Period == "JAN" | Period == "FEB")
+
+spring_egg <- new_egg |>
+filter(Period == "MAR" | Period == "APR" | Period == "MAY")
+
+summer_egg <- new_egg |>
+filter(Period == "JUN" | Period == "JUL" | Period == "AUG")
+
+fall_egg <- new_egg |>
+filter(Period == "SEP" | Period == "OCT" | Period == "NOV")
+```
+
+#### Take the average of each state within a season group
+
+```{r}
+winter_egg <- winter_egg |>
+group_by(State) |>
+summarize(avg_egg = mean(Value))
+
+spring_egg <- spring_egg |>
+group_by(State) |>
+summarize(avg_egg = mean(Value))
+
+summer_egg <- summer_egg |>
+group_by(State) |>
+summarize(avg_egg = mean(Value))
+
+fall_egg <- fall_egg |>
+group_by(State) |>
+summarize(avg_egg = mean(Value))
+```
+
+#### Histograms of the seasonal average egg production for the 16 states
+
+```{r}
+ggplot(winter_egg, aes(x = avg_egg)) +
+geom_histogram(binwidth = 75000000, fill = "cyan", col = "grey") +
+labs(
+title = "Winter Average Egg Amount Histogram",
+x = "Number of Eggs"
+)
+
+ggplot(spring_egg, aes(x = avg_egg)) +
+geom_histogram(binwidth = 75000000, fill = "green", col = "grey") +
+labs(
+title = "Spring Average Egg Amount Histogram",
+x = "Number of Eggs"
+)
+
+ggplot(summer_egg, aes(x = avg_egg)) +
+geom_histogram(binwidth = 75000000, fill = "yellow", col = "grey") +
+labs(
+title = "Summer Average Egg Amount Histogram",
+x = "Number of Eggs"
+)
+
+ggplot(fall_egg, aes(x = avg_egg)) +
+geom_histogram(binwidth = 75000000, fill = "orange", col = "grey") +
+labs(
+title = "Fall Average Egg Amount Histogram",
+x = "Number of Eggs"
+)
+
+```
+
+The seasonal histograms for the 16 states look fairly similar, suggesting that average egg production by season is not dramatically different across Winter, Spring, Summer, and Fall.
+
+<br>
+
+## 3.2 Boxplot by season (all states)
+
+#### Side-by-side box plot for all 2023 data
+
+```{r}
+ggplot(table_2023, aes(season, Value)) +
+geom_boxplot(aes(y = Value, x = season, fill = season)) +
+labs(
+title = "Side-by-Side Box Plot of Monthly Average Egg Amount in Each Season",
+y = "Number of Eggs",
+x = "Seasons"
+)
+```
+
+The boxplot shows that the distributions of monthly egg production are very similar across the four seasons, with similar medians and spreads.
+
+<br>
+
+## 3.3 Dot plot and summary tables
+
+#### Set Period as an ordered factor for plotting and summaries
+
+```{r}
+table_2023$Period <- factor(
+table_2023$Period,
+levels = c("DEC", "JAN", "FEB", "MAR", "APR", "MAY",
+"JUN", "JUL", "AUG", "SEP", "OCT", "NOV")
+)
+```
+
+#### Dot plot of mean egg production by month
+
+```{r}
+ggplot(table_2023, aes(Period, Value)) +
+geom_point(stat = "summary", fun = "mean") +
+labs(
+x = "Months",
+y = "Average Number of Eggs \n by 100 million",
+title = "Dot Plot of Mean Number of Eggs From Each Month 2023"
+) +
+scale_y_continuous(
+limits = c(0, NA),
+labels = function(x) x / 100000000
+) +
+coord_flip()
+```
+
+```{r}
+# Find states that have all 12 months in 2023
+complete_states <- table_2023 |>
+  group_by(State) |>
+  summarize(n_months = n_distinct(Period)) |>
+  filter(n_months == 12) |>
+  pull(State)
+
+# Keep only those complete states
+table_2023_complete <- table_2023 |>
+  filter(State %in% complete_states)
+```
+
+#### Summary of eggs per season
+
+```{r}
+# Find states that have all 12 months in 2023 AND no missing Values
+complete_states <- table_2023 |>
+  group_by(State) |>
+  summarize(
+    n_months     = n_distinct(Period),
+    n_non_missing = sum(!is.na(Value))
+  ) |>
+  filter(n_months == 12, n_non_missing == 12) |>
+  pull(State)
+
+# Keep only those complete states
+table_2023_complete <- table_2023 |>
+  filter(State %in% complete_states)
+
+summary_egg <- table_2023 |>
+group_by(season) |>
+summarize(
+Observation_number = length(Year),
+Average_Egg_Count = round(mean(Value), 0),
+SD_Egg_Count = round(sd(Value), 0)
+)
+
+summary_egg
+```
+
+#### Summary of eggs per month
+
+```{r}
+summary_m_egg <- table_2023_complete |>
+  group_by(Period) |>
+  summarize(
+    Observation_number = n_distinct(State),     
+    Average_Egg_Count  = round(mean(Value, na.rm = TRUE), 0 ),
+    SD_Egg_Count       = round(sd(Value,   na.rm = TRUE), 0),
+    num_month          = round(mean(month_num, na.rm = TRUE), 0)
+  )
+
+summary_m_egg[order(summary_m_egg$num_month), ]
+```
+
+The month-by-month averages also stay in a similar range, giving more evidence that egg production is fairly stable across the calendar year.
+
+<br><br>
+
+# 4. Assumption Checks
+
+#### Normality check using a Q-Q plot for egg production
+
+```{r}
+qqnorm(table_2023$Value)
+qqline(table_2023$Value)
+```
+
+The Q–Q plot is not perfectly straight. The points dip below the line in the bottom-left corner and bend upward in the top-right corner, which shows outliers on both ends and a right-skewed tail. Even though the normality assumption is not fully met, our sample size is large enough that we can use ANOVA with this limitation in mind.
+
+<br><br>
+
+# 5. Statistical Analysis: One-Way ANOVA
+
+#### One-way ANOVA: egg production by season
+
+```{r}
+mod_egg <- aov(Value ~ season, data = table_2023)
+summary(mod_egg)
+```
+
+From the ANOVA test, the test statistic is F = 0.017 with p = 0.997. Because the p-value is much larger than 0.05, we fail to reject the null hypothesis. There is not enough evidence to conclude that mean egg production differs across the four seasons in 2023.
