@@ -62,8 +62,6 @@ This statistical analysis was conducted as a team project by:
 * **Nicholas Fisher**
 * **Christopher Nguyen**
 
-The original R/Quarto materials are preserved in `legacy_r/` for reference; the primary implementation is Python.
-
 ---
 
 ## Project Structure
@@ -71,5 +69,4 @@ The original R/Quarto materials are preserved in `legacy_r/` for reference; the 
 ├── data/                  # USDA Table Egg production CSV
 ├── egg_seasonal_analysis.py # Python data cleaning and ANOVA analysis
 ├── requirements.txt         # Python dependencies
-├── legacy_r/                # Original R coursework materials
 ├── README.md              # Project documentation
