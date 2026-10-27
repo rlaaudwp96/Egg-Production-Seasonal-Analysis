@@ -1,4 +1,6 @@
-# 🥚 2023 US Egg Production: Seasonal Variance & ANOVA Analysis
+# 2023 U.S. Egg Production Seasonal Analysis
+
+Python statistical analysis of USDA egg production data using pandas and SciPy.
 
 ## Business Problem & Context
 In 2023, the US agricultural sector experienced significant fluctuations in retail egg prices and consumer demand. A critical question for supply chain managers, agricultural distributors, and policy planners is whether raw production output experiences natural seasonal drop-offs (e.g., severe winter cold or summer heat stress) or if commercial production remains stable year-round.
@@ -26,6 +28,15 @@ This project analyzes 2023 USDA table egg production data to test if total egg v
 
 ## Methodology & Statistical Testing
 
+Run the reproducible Python analysis with:
+
+```bash
+pip install -r requirements.txt
+python egg_seasonal_analysis.py
+```
+
+The script cleans the 2023 USDA data, maps months to meteorological seasons, summarizes production, and runs a one-way ANOVA.
+
 ### 1. Descriptive Summary
 | Season | Observations ($n$) | Mean Monthly Egg Count | Std. Deviation |
 | :--- | :---: | :---: | :---: |
@@ -51,11 +62,14 @@ This statistical analysis was conducted as a team project by:
 * **Nicholas Fisher**
 * **Christopher Nguyen**
 
+The original R/Quarto materials are preserved in `legacy_r/` for reference; the primary implementation is Python.
+
 ---
 
 ## Project Structure
 ```text
 ├── data/                  # USDA Table Egg production CSV
-├── scripts/
-│   └── analysis.R         # R script for data cleaning, EDA, and ANOVA testing
+├── egg_seasonal_analysis.py # Python data cleaning and ANOVA analysis
+├── requirements.txt         # Python dependencies
+├── legacy_r/                # Original R coursework materials
 ├── README.md              # Project documentation
