@@ -1,72 +1,97 @@
 # 2023 U.S. Egg Production Seasonal Analysis
 
-Python statistical analysis of USDA egg production data using pandas and SciPy.
+### Test whether seasonal patterns explain changes in U.S. egg production
 
-## Business Problem & Context
-In 2023, the US agricultural sector experienced significant fluctuations in retail egg prices and consumer demand. A critical question for supply chain managers, agricultural distributors, and policy planners is whether raw production output experiences natural seasonal drop-offs (e.g., severe winter cold or summer heat stress) or if commercial production remains stable year-round.
+[![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
+[![Statistics](https://img.shields.io/badge/Method-one--way%20ANOVA-6C5CE7)](https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.f_oneway.html)
+[![Data](https://img.shields.io/badge/Data-USDA%202023-2E7D32)](https://www.nass.usda.gov/)
 
-This project analyzes 2023 USDA table egg production data to test if total egg volume varies significantly across meteorological seasons.
+This project uses Python, pandas, and SciPy to evaluate whether monthly U.S. table-egg production changed significantly across Spring, Summer, Fall, and Winter in 2023. The analysis is framed for supply-chain and agricultural decision-makers who need to separate normal seasonal variation from other drivers of price volatility.
 
----
+## Contents
 
-## Key Findings & Supply Chain Impact
-* **Statistical Verdict:** One-Way ANOVA yielded an **$F$-statistic of 0.017** with a **$p$-value of 0.997** ($\alpha = 0.05$).
-* **Conclusion:** Failed to reject the null hypothesis. There is **no statistically significant difference** in average monthly egg production across Spring, Summer, Fall, and Winter in 2023.
-* **Business Takeaway:** Commercial layer egg output is remarkably stable across calendar seasons (~278M to ~290M eggs/month on average across state groupings). Retail price spikes in 2023 were likely driven by demand spikes, avian flu disruptions, or feed cost inflation—not baseline seasonal production drops.
+- [Business question](#business-question)
+- [Key result](#key-result)
+- [Quick start](#quick-start)
+- [Method](#method)
+- [Technical workflow](#technical-workflow)
+- [Project structure](#project-structure)
+- [Limitations and known issues](#limitations-and-known-issues)
+- [Contribution](#contribution)
+- [Support](#support)
+- [License](#license)
 
----
+## Business question
 
-## Data & Preprocessing
-* **Source:** USDA National Agricultural Statistics Service (NASS) table egg production dataset (2023).
-* **Data Cleaning Steps:**
-  1. Filtered data strictly for the year 2023 and stripped non-geographic/administrative metadata.
-  2. Imputed/removed restricted privacy entries marked as `(D)`.
-  3. Cleaned string values and formatted output variables into numeric values.
-  4. Mapped months into 4 meteorological seasons (`Winter`: Dec–Feb, `Spring`: Mar–May, `Summer`: Jun–Aug, `Fall`: Sep–Nov).
+If production is stable across seasons, a retail price spike may be driven by demand, feed costs, disease disruptions, or other supply-chain factors rather than a predictable production drop. This project tests that question with descriptive summaries and a one-way ANOVA.
 
----
+## Key result
 
-## Methodology & Statistical Testing
+The one-way ANOVA produced **F = 0.017** and **p = 0.997**. The analysis failed to reject the null hypothesis, indicating no statistically significant difference in average monthly production across the four seasons in this 2023 sample.
 
-Run the reproducible Python analysis with:
+Average monthly output remained in a similar range across seasons, roughly 278M to 291M eggs across the summarized producer groups.
 
-```bash
+## Quick start
+
+### Prerequisites
+
+- Python 3.10 or newer
+- Git
+
+```powershell
+git clone https://github.com/rlaaudwp96/Egg-Production-Seasonal-Analysis.git
+cd Egg-Production-Seasonal-Analysis
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 python egg_seasonal_analysis.py
 ```
 
-The script cleans the 2023 USDA data, maps months to meteorological seasons, summarizes production, and runs a one-way ANOVA.
+## Method
 
-### 1. Descriptive Summary
-| Season | Observations ($n$) | Mean Monthly Egg Count | Std. Deviation |
-| :--- | :---: | :---: | :---: |
-| **Spring** | 54 | 286,409,259 | 311,831,916 |
-| **Summer** | 54 | 288,750,000 | 313,247,303 |
-| **Fall** | 54 | 290,801,852 | 311,770,421 |
-| **Winter** | 54 | 278,461,111 | 298,083,870 |
+1. Filter the USDA table-egg dataset to 2023.
+2. Remove administrative and restricted entries marked `(D)`.
+3. Convert production values to numeric values.
+4. Map months to meteorological seasons.
+5. Summarize seasonal distributions and run one-way ANOVA.
 
-### 2. Assumption Checks
-* **Normality Check:** Visualized residual distributions via Normal Q-Q plots. The data showed right-skewness due to high-output producer states. Because the sample size ($N = 216$) is sufficiently large, ANOVA was applied per the Central Limit Theorem.
+## Technical workflow
 
-### 3. Hypothesis Test
-* **$H_0$:** $\mu_{\text{Spring}} = \mu_{\text{Summer}} = \mu_{\text{Fall}} = \mu_{\text{Winter}}$
-* **$H_1$:** At least one seasonal mean differs significantly.
-* **ANOVA Results:** $Df = 3$, $\text{Sum Sq} = 4.729 \times 10^{15}$, $F = 0.017$, $p = 0.997$.
+```mermaid
+flowchart LR
+    A[USDA 2023 production data] --> B[Clean and filter records]
+    B --> C[Map months to seasons]
+    C --> D[Seasonal summaries]
+    C --> E[One-way ANOVA]
+    D --> F[Supply-chain interpretation]
+    E --> F
+```
 
----
+## Project structure
 
-## 👥 Contributors
-This statistical analysis was conducted as a team project by:
-
-* **Myungje Kim**
-* **Nicholas Fisher**
-* **Christopher Nguyen**
-
----
-
-## Project Structure
 ```text
-├── data/                  # USDA Table Egg production CSV
-├── egg_seasonal_analysis.py # Python data cleaning and ANOVA analysis
-├── requirements.txt         # Python dependencies
-├── README.md              # Project documentation
+Egg-Production-Seasonal-Analysis/
+├── egg_data.csv               # USDA table-egg production data
+├── egg_seasonal_analysis.py   # Reproducible Python analysis
+├── requirements.txt           # pandas and SciPy dependencies
+└── README.md
+```
+
+## Limitations and known issues
+
+- The analysis covers one year, so it does not establish a long-term seasonal trend.
+- Production data is not the same as retail price data.
+- State-level output is highly uneven, which creates right-skewed distributions.
+- The result should be interpreted with domain context rather than as a forecast.
+
+## Contribution
+
+Open an issue with a reproducible example, keep cleaning and modeling changes in `egg_seasonal_analysis.py`, and explain any change to the statistical assumptions in the pull request.
+
+## Support
+
+Use GitHub Issues or connect with [Myungje Kim on LinkedIn](https://www.linkedin.com/in/evan-kim-257857249/).
+
+## License
+
+No open-source license has been specified yet. Contact the repository owner before redistributing or adapting the code.
